@@ -35,61 +35,15 @@ uint16_t generationNumber = 0;
 uint16_t lightsToFadeOn[128];
 uint16_t lightsToFadeOff[128];
 
-int deadCounter=0;
+int deadCounter = 0;
 int numOfGames = 1;
 bool newGame = true;
 
-RGB randomColor = {0,0,0};
+RGB randomColor = {0, 0, 0};
 
-void pickRandomColor(){
-  int R = 0;
-  int G = 0;
-  int B = 0;
 
-  
-  R = random(0,2);
-  G = random(0,2);
-  B = random(0,2);
 
-  while(R == 0 && G == 0 && B == 0){
-  R = random(0,2);
-  G = random(0,2);
-  B = random(0,2);
-  }
 
-  randomColor.r = R;
-  randomColor.g = G;
-  randomColor.b = B;
-  
-}
-
-void initLightFadeArrays(){
-  for(int i = 0; i < 127; i++){
-    lightsToFadeOn[i] = 256;
-    lightsToFadeOff[i] = 256;
-  }
-}
-
-void markPixelToFadeOn(int x,int y){
-  for(int i = 0; i < 127; i++){
-    if(lightsToFadeOn[i] == 256){
-      lightsToFadeOn[i] = x;
-      lightsToFadeOn[i+1] = y;
-      return;
-    }
-  }
-}
-
-void markPixelToFadeOff(int x,int y){
-  for(int i = 0; i < 127; i++){
-    if(lightsToFadeOff[i] == 256){
-      lightsToFadeOff[i] = x;
-      lightsToFadeOff[i+1] = y;
-      return;
-    }
-  }
-
-}
 
 void setup() {
 
@@ -100,11 +54,88 @@ void setup() {
   matrix.setBrightness(14);
   matrix.setTextColor(colors[3]);
   matrix.setTextSize(6);
-  
+
   matrix.fillScreen(0);
   initBoard();
   initLightFadeArrays();
   //  printFreeRam();
+}
+
+void loop() {
+  //  linetest(green, 1000);
+  //  colorWipe(blue, 1000);
+
+  if (newGame) {
+    newGame = false;
+    pickRandomColor();
+    delay(1000);
+  }
+
+
+
+  drawBoard(true);
+  //delay();
+
+  calculateNextState();
+  // printFreeRam();
+
+}
+
+
+
+
+
+
+
+
+void pickRandomColor() {
+  int R = 0;
+  int G = 0;
+  int B = 0;
+
+
+  R = random(0, 2);
+  G = random(0, 2);
+  B = random(0, 2);
+
+  while (R == 0 && G == 0 && B == 0) {
+    R = random(0, 2);
+    G = random(0, 2);
+    B = random(0, 2);
+  }
+
+  randomColor.r = R;
+  randomColor.g = G;
+  randomColor.b = B;
+
+}
+
+void initLightFadeArrays() {
+  for (int i = 0; i < 127; i++) {
+    lightsToFadeOn[i] = 256;
+    lightsToFadeOff[i] = 256;
+  }
+}
+
+void markPixelToFadeOn(int x, int y) {
+  for (int i = 0; i < 127; i++) {
+    if (lightsToFadeOn[i] == 256) {
+      lightsToFadeOn[i] = x;
+      lightsToFadeOn[i + 1] = y;
+      return;
+    }
+  }
+}
+
+void markPixelToFadeOff(int x, int y) {
+  for (int i = 0; i < 127; i++) {
+    if (lightsToFadeOff[i] == 256) {
+      lightsToFadeOff[i] = x;
+      lightsToFadeOff[i + 1] = y;
+      return;
+    }
+  }
+
 }
 
 
@@ -147,32 +178,12 @@ void randomize()
 }
 
 
-void loop() {
-  //  linetest(green, 1000);
-  //  colorWipe(blue, 1000);
-
-  if(newGame){
-    newGame = false;
-    pickRandomColor();
-    delay(1000);
-  }
-
-
-  
-  drawBoard(true);
-  //delay();
-
-  calculateNextState();
-  // printFreeRam();
-
-}
-
 // Fill the pixels one after the other with a color
 void colorWipe(RGB color, uint8_t wait) {
 
   for (uint16_t y = 0; y < HEIGHT; y++) {
     for (uint16_t x = 0; x < WIDTH; x++) {
-      
+
       matrix.drawPixel(x, y, matrix.Color(color.r, color.g, color.b));
       matrix.show();
       delay(wait);
@@ -221,8 +232,10 @@ void calculateNextState() {
 
 void printStateToSerial() {
   Serial.print("Generation ");
-  Serial.println(generationNumber);
-  for (uint16_t y = 0; y < HEIGHT; y++) {
+  Serial.print(generationNumber);
+  Serial.print(", Ram Used ");
+  Serial.println(freeRam());
+  /*for (uint16_t y = 0; y < HEIGHT; y++) {
     Serial.print(" ");
     for (uint16_t x = 0; x < WIDTH; x++) {
 
@@ -230,37 +243,37 @@ void printStateToSerial() {
       Serial.print(" ");
     }
     Serial.println(" ");
-  }
+  }*/
 
 
 }
 
 void checkIfDead() {
+  if (generationNumber > 250) {
+    generationNumber = 0;
+    randomize();
+    newGame = true;
+    numOfGames++;
+    deadCounter = 0;
+    return;
+  }
 
-if(generationNumber >250){
-          generationNumber = 0;
-          randomize();
-          newGame = true;
-          numOfGames++;
-          deadCounter = 0;
-          return;
-}
-  
   for (uint16_t y = 0; y < HEIGHT; y++) {
     for (uint16_t x = 0; x < WIDTH; x++) {
 
-      if(board[x][y] != 0){
-        return;}
+      if (board[x][y] != 0) {
+        return;
+      }
     }
-        }
-        deadCounter ++;
-        if(deadCounter >=10){
-          randomize();
-          newGame = true;
-          numOfGames++;
-          deadCounter = 0;
-      
-    }
+  }
+  deadCounter ++;
+  if (deadCounter >= 10) {
+    randomize();
+    newGame = true;
+    numOfGames++;
+    deadCounter = 0;
+
+  }
 }
 
 void printFreeRam() {
@@ -316,38 +329,38 @@ void drawBoard(bool fade) {
   for (uint16_t y = 0; y < HEIGHT; y++) {
     for (uint16_t x = 0; x < WIDTH; x++) {
 
-      if(lastBoard[x][y] != 0 && board[x][y] != 0){
+      if (lastBoard[x][y] != 0 && board[x][y] != 0) {
         matrix.drawPixel(x, y, matrix.Color(randomColor.r * 255, randomColor.g * 255, randomColor.b * 255));
       }
-      if(lastBoard[x][y] == 0 && board[x][y] == 0){
+      if (lastBoard[x][y] == 0 && board[x][y] == 0) {
         matrix.drawPixel(x, y, matrix.Color(0, 0, 0));
-      }     
-      if(lastBoard[x][y] == 0 && board[x][y] != 0){
-        markPixelToFadeOn(x,y);
       }
-      if(lastBoard[x][y] != 0 && board[x][y] == 0){
-        markPixelToFadeOff(x,y);
+      if (lastBoard[x][y] == 0 && board[x][y] != 0) {
+        markPixelToFadeOn(x, y);
       }
-      
+      if (lastBoard[x][y] != 0 && board[x][y] == 0) {
+        markPixelToFadeOff(x, y);
+      }
+
     }
   }
 
-  
-for(int lum = 0; lum < 255; lum +=5){
-  for(int i = 0; i < 127; i+=2){
-    if(lightsToFadeOn[i] != 256){
-      matrix.drawPixel(lightsToFadeOn[i], lightsToFadeOn[i+1], matrix.Color(randomColor.r * lum, randomColor.g * lum, randomColor.b * lum));
-    }
-  }
 
-  for(int i = 0; i < 127; i+=2){
-    if(lightsToFadeOff[i] != 256){
-      matrix.drawPixel(lightsToFadeOff[i], lightsToFadeOff[i+1], matrix.Color(randomColor.r * (255-lum), randomColor.g * (255-lum), randomColor.b * (255-lum)));
+  for (int lum = 0; lum < 255; lum += 5) {
+    for (int i = 0; i < 127; i += 2) {
+      if (lightsToFadeOn[i] != 256) {
+        matrix.drawPixel(lightsToFadeOn[i], lightsToFadeOn[i + 1], matrix.Color(randomColor.r * lum, randomColor.g * lum, randomColor.b * lum));
+      }
     }
-  }
-  matrix.show();
-  delayMicroseconds(500);
-}/*}else{
+
+    for (int i = 0; i < 127; i += 2) {
+      if (lightsToFadeOff[i] != 256) {
+        matrix.drawPixel(lightsToFadeOff[i], lightsToFadeOff[i + 1], matrix.Color(randomColor.r * (255 - lum), randomColor.g * (255 - lum), randomColor.b * (255 - lum)));
+      }
+    }
+    matrix.show();
+    delayMicroseconds(500);
+  }/*}else{
   for (uint16_t y = 0; y < HEIGHT; y++) {
     for (uint16_t x = 0; x < WIDTH; x++) {
       if (board[x][y] != 0) {
@@ -362,13 +375,12 @@ for(int lum = 0; lum < 255; lum +=5){
 
     }
   }
-}*/
+  }*/
   matrix.show();
-  
-  }
+
+}
 
 void copyArraystate() {
-
   for (uint16_t y = 0; y < HEIGHT; y++) {
     for (uint16_t x = 0; x < WIDTH; x++) {
       lastBoard[x][y] = board[x][y];
