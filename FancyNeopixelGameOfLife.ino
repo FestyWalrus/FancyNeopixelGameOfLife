@@ -51,13 +51,13 @@ void setup() {
   Serial.println("Conways Game of Life for Neopixel");
   matrix.begin();
   matrix.setTextWrap(true);
-  matrix.setBrightness(14);
+  matrix.setBrightness(1);
   matrix.setTextColor(colors[3]);
   matrix.setTextSize(6);
-
   matrix.fillScreen(0);
   initBoard();
   initLightFadeArrays();
+  pickRandomColor();
   //  printFreeRam();
 }
 
@@ -67,10 +67,9 @@ void loop() {
 
   if (newGame) {
     newGame = false;
+    pickRandomColor();
     delay(1000);
   }
-
-
 
   drawBoard(true);
   //delay();
@@ -78,10 +77,12 @@ void loop() {
   calculateNextState();
   // printFreeRam();
 
+  if(Serial.available()){
+  int serialData = Serial.readString().toInt();
+  matrix.setBrightness(serialData);
+  }
+
 }
-
-
-
 
 
 
@@ -252,7 +253,6 @@ void checkIfDead() {
     newGame = true;
     numOfGames++;
     deadCounter = 0;
-    pickRandomColor();
     return;
   }
 
@@ -270,7 +270,6 @@ void checkIfDead() {
     newGame = true;
     numOfGames++;
     deadCounter = 0;
-    pickRandomColor();
 
   }
 }
