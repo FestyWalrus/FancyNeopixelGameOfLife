@@ -51,7 +51,7 @@ void setup() {
   Serial.println("Conways Game of Life for Neopixel");
   matrix.begin();
   matrix.setTextWrap(true);
-  matrix.setBrightness(1);
+  matrix.setBrightness(5);
   matrix.setTextColor(colors[3]);
   matrix.setTextSize(6);
   matrix.fillScreen(0);
@@ -357,7 +357,7 @@ void drawBoard(bool fade) {
       }
     }
     matrix.show();
-    delayMicroseconds(500);
+    delay(1);
   }/*}else{
   for (uint16_t y = 0; y < HEIGHT; y++) {
     for (uint16_t x = 0; x < WIDTH; x++) {
