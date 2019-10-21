@@ -67,7 +67,6 @@ void loop() {
 
   if (newGame) {
     newGame = false;
-    pickRandomColor();
     delay(1000);
   }
 
@@ -208,7 +207,7 @@ void linetest(RGB color, uint8_t wait) {
 
 void calculateNextState() {
 
-  Serial.println("Calculating next step");
+  //Serial.println("Calculating next step");
   for (uint16_t y = 0; y < HEIGHT; y++) {
     for (uint16_t x = 0; x < WIDTH; x++) {
 
@@ -232,9 +231,7 @@ void calculateNextState() {
 
 void printStateToSerial() {
   Serial.print("Generation ");
-  Serial.print(generationNumber);
-  Serial.print(", Ram Used ");
-  Serial.println(freeRam());
+  Serial.println(generationNumber);
   /*for (uint16_t y = 0; y < HEIGHT; y++) {
     Serial.print(" ");
     for (uint16_t x = 0; x < WIDTH; x++) {
@@ -255,6 +252,7 @@ void checkIfDead() {
     newGame = true;
     numOfGames++;
     deadCounter = 0;
+    pickRandomColor();
     return;
   }
 
@@ -272,12 +270,13 @@ void checkIfDead() {
     newGame = true;
     numOfGames++;
     deadCounter = 0;
+    pickRandomColor();
 
   }
 }
 
 void printFreeRam() {
-  Serial.print("Free Ram ");
+  //Serial.print("Free Ram ");
   Serial.println(freeRam());
 
 }
